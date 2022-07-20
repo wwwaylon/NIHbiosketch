@@ -47,7 +47,7 @@ https://scholar.google.com/intl/en/scholar/citations.html.
 
 ```
 ###------------------------ Update the location of the supporting files-------------------------###
-C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx
+C:/Users/mydata.xlsx
 
 ```
 
