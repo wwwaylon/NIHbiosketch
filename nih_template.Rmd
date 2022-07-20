@@ -53,7 +53,6 @@ output:
       footer: 0.5
       gutter: 0.0
     reference_num: true
-bibliography: yourbibfile.bib    
 ---
 
 
@@ -156,7 +155,7 @@ ft1
 
 ```{r degrees}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet2")
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet2")
 edu <- df[order(df$order),]
 
 edu$inst <- paste0(" ", edu$INSTITUTION, ", ", edu$LOCATION)
@@ -222,7 +221,7 @@ Originally trained as a Quantitative Psychologist, I have studied applied statis
 ######### Positions and Employment
 ```{r jobs}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet1")
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet1")
 
 jobs<- df %>% 
   filter(section == "positions")
@@ -361,7 +360,7 @@ Behavioral medicine, 44(3):209–218
 ######### Ongoing Research Support
 ```{r ongoing}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet3")
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet3")
 
 ongoing<- df %>% 
   filter(section == "ongoing")
@@ -475,7 +474,7 @@ cat("<br />")
 ######### Completed Research Support
 ```{r done}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet3")
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet3")
 
 ongoing<- df %>% 
   filter(section == "complete")
