@@ -1,0 +1,588 @@
+---
+title: ""
+author: ""
+date: ""
+output:
+  officedown::rdocx_document:
+    reference_docx: nih_template.docx
+    tables:
+      style: Table
+      layout: autofit
+      width: 1.0
+      topcaption: true
+      tab.lp: 'tab:'
+      caption:
+        style: Table Caption
+        pre: 'Table '
+        sep: ': '
+        tnd: 0
+        tns: '-'
+        fp_text: !expr officer::fp_text_lite(bold = TRUE)
+      conditional:
+        first_row: true
+        first_column: false
+        last_row: false
+        last_column: false
+        no_hband: false
+        no_vband: true
+    plots:
+      style: Normal
+      align: center
+      fig.lp: 'fig:'
+      topcaption: false
+      caption:
+        style: Image Caption
+        pre: 'Figure '
+        sep: ': '
+        tnd: 0
+        tns: '-'
+        fp_text: !expr officer::fp_text_lite(bold = TRUE)
+    lists:
+      ol.style: null
+      ul.style: null
+    page_size:
+      width: 8.3
+      height: 11.7
+      orient: "portrait"
+    page_margins:
+      bottom: .5
+      top: .5
+      right: .5
+      left: .5
+      header: 0.8
+      footer: 0.5
+      gutter: 0.0
+    reference_num: true
+bibliography: yourbibfile.bib    
+---
+
+
+```{r global_options, include=FALSE}
+
+library(scholar)
+library(tidyverse)
+library(flextable)
+library(officer)
+
+myid <- "wUACzXkAAAAJ&hl"
+
+# Get name
+l <- get_profile(myid)
+lf <-  gsub("(\\w+)\\s*(\\w+)", "\\2, \\1", l$name)
+
+coauthor_network <- get_coauthors(myid, n_coauthors = 15, n_deep = 1)
+coauthor_network <- coauthor_network[1:10, ]
+coauthors <- paste0(coauthor_network$coauthor, collapse=", ")
+
+mypubs<-get_publications(
+  myid,
+  cstart = 0,
+  cstop = Inf,
+  pagesize = 100,
+  flush = FALSE,
+  sortby = "citation"
+)
+
+top_3pubs = head(mypubs, n = 3)
+
+top_3pubs$author<- gsub("(\\w+)\\s*(\\w+)", "\\2 \\1", top_3pubs$author) #--- reverse the author last name initials order
+
+top_3pubs_list <- paste0(top_3pubs$author, " (", top_3pubs$year, "). ", top_3pubs$title, ". ", top_3pubs$journal, ", ", top_3pubs$number, ".")
+
+pub1 <- top_3pubs_list[[1]]
+pub2 <- top_3pubs_list[[2]]
+pub3 <- top_3pubs_list[[3]]
+
+cites<-get_citation_history(myid)
+ncites<-sum(cites$cites)
+
+hindex <- predict_h_index(myid)
+nhindex <- hindex$h_index[hindex$years_ahead==0]
+
+l <- get_profile(myid)
+i10index <- l$i10_index
+
+njournals <- get_num_distinct_journals(myid)
+
+## This saves you from having to do this for every chunk
+knitr::opts_chunk$set(fig.path = 'figures/',
+                      echo = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      results = "asis")
+
+```
+
+
+```{r header}
+
+df <- data.frame(A = c("BIOGRAPHICAL SKETCH", "Provide the following information for the Senior/key personnel and other significant contributors.", "Follow this format for each person. DO NOT EXCEED FIVE PAGES.", paste0("NAME: ", lf), "eRA COMMONS USERNAME (credential, e.g., agency login): waylonh", "POSITION TITLE: Principal Biostatistician", "EDUCATION/TRAINING (Begin with baccalaureate or other initial professional education, such as nursing, include postdoctoral training and residency training if applicable. Add/delete rows as necessary.)" ))
+
+ft1 <- flextable(df) 
+ft1 <-width(ft1, j=1, width = 7.5)
+
+ft1 <- delete_part(ft1, part = "header")
+ft1 <- align(ft1, i = c(1,2,3), j = 1, align = "center", part = "body")
+
+#------ font --------------
+ft1 <- fontsize(ft1, i = 1, j = 1, size = 13.5, part = "body")
+ft1 <- italic(ft1, i = 7, italic = TRUE, part = "body")
+ft1 <- bold(ft1, i = 1, bold = TRUE, part = "body")
+ft1 <- fontsize(ft1, i = c(2,3), size = 8, part = "body")
+
+#------ borders --------------
+ft1 <- border_remove(ft1)
+std_border = fp_border(color="black", width = 1, style = "none")
+top_border = fp_border(color="white", width = 1)
+
+ft1 <- valign(ft1, i = c(3,4,5,6,7), j = 1, valign = "top", part = "body")
+
+ft1 <- hline(ft1, i = c(3,4,5,6,7), j = 1,  part="body", border = std_border )
+
+ft1 <- add_header_row(ft1, colwidths = c(1),
+        values = c("OMB No. 0925-0001 and 0925-0002 (Rev. 03/2020 Approved Through 02-28-2023)") )
+ft1 <- align(ft1, align = "right", part = "header")
+ft1 <- fontsize(ft1, size = 8, part = "header")
+
+ft1 <- padding(ft1, i=c(1,2,3,4,5,6,7), padding.top = .10, part = "body")
+ft1 <- padding(ft1, i=c(2), padding.bottom = .10, part = "body")
+
+ft1 <- hline(ft1, border = std_border, part = "header")
+
+ft1
+
+```
+
+
+```{r degrees}
+
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet2")
+edu <- df[order(df$order),]
+
+edu$inst <- paste0(" ", edu$INSTITUTION, ", ", edu$LOCATION)
+edu$datemy <- paste0("05/", edu$YEAR)
+
+edu$MAJOR<-paste0(" ",edu$MAJOR)
+
+myvars <- c("inst", "DEGREE", "datemy", "MAJOR")
+edu <- edu[myvars]
+
+names(edu) <- c("INSTITUTION AND LOCATION", "DEGREE (if applicable)", "Completion Date MM/YYYY", "FIELD OF STUDY")
+
+ft <- flextable(edu) 
+
+ft <- add_body(
+  x = ft, `INSTITUTION AND LOCATION` = c(""), `DEGREE (if applicable)` = "  ", `Completion Date MM/YYYY` = "  ", `FIELD OF STUDY` = "  ", top = FALSE
+)
+
+std_border = fp_border(color="black", width = 1)
+btm_border = fp_border(color="white", width = 1)
+top_border = fp_border(color="white", width = 1)
+
+ft <- border_remove(ft)
+
+ft <- border_inner_v(ft, border = std_border, part = "all")
+
+ft <- bold(ft, bold = FALSE, part = "header")
+
+ft <- border(ft, border.top = std_border, part = "header" )
+ft <- hline(ft, part="header", border = std_border )
+
+ft <-width(ft, j=1, width = 2.85)
+ft <-width(ft, j=2, width = 1)
+ft <-width(ft, j=3, width = 1.5)
+ft <-width(ft, j=c(4), width = 2.10)
+
+ft <- font(ft, fontname = "Arial", part = "all")
+ft <- fontsize(ft, size = 11, part = "all")
+
+ft <- align(ft, j = c(2,3), align = "center", part = "body")
+ft <- align(ft, align = "center", part = "header")
+ft <- padding(ft, padding = 1, part = "all")
+
+ft <- padding(ft, j = 4, padding.left = 2)
+
+ft
+
+```
+
+##### A. Personal Statement
+
+Originally trained as a Quantitative Psychologist, I have studied applied statistics and research methodology for over 10 years and gone on to develop advanced expertise in the application and advancement of quantitative measurement and analysis practices within the social, behavioral, and health sciences. My research interests include modeling individual, group, and developmental differences, general structural equations modeling techniques (e.g., MACS, Growth Curve, HLM, mediation), construct validation, measurement, selection effects, and missing data analysis. I have served as collaborator, consultant, and significant contributor for successful NIH U01-, R21-, R01-; NSF-; and IES-funded grants. In addition, I have served as the Director of research for several applied statistical science groups across academic, industry, and non-profit research organizations. I have also successfully organized, managed, and taught a week-long summer statistics workshop series at the University of Massachusetts including basic and advanced courses (total participants = 60) focused on advanced statistical training at the graduate and post-graduate level. As an interdisciplinary-oriented collaborator, my work has appeared in `r njournals` different peer-reviewed journals and been cited `r ncites` times, with an h-index of `r nhindex`, and an i-10 index of `r i10index`. I have served as a reviewer for 7 different scientific journals and have served as a statistical consultant on more than 15 contracts.
+
+<br>
+
+1. `r pub1`
+
+1. `r pub2`
+
+1. `r pub3`
+
+##### B. Positions and Honors
+######### Positions and Employment
+```{r jobs}
+
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet1")
+
+jobs<- df %>% 
+  filter(section == "positions")
+
+jobs <- jobs[order(-jobs$order),]
+
+jobs$dates <- paste0(jobs$start_date, "-", jobs$end_date) 
+jobs$dates <-gsub("NA", "", jobs$dates)
+
+myvars <- c("dates", "description")
+jobs <- jobs[myvars]
+
+ft <- flextable(jobs) 
+
+ft <-delete_part(ft, part = "header")
+ft <- border_remove(ft)
+
+ft <-width(ft, j=1, width = 1.00)
+ft <-width(ft, j=2, width = 6.25)
+
+ft <- font(ft, fontname = "Arial", part = "all")
+ft <- fontsize(ft, size = 11, part = "all")
+
+ft_jobs <- padding(ft, padding = 1, part = "all")
+
+ft_jobs
+
+```
+
+<br>  
+
+######### Other Experience and Professional Memberships
+```{r other}
+
+other<- df %>% 
+  filter(section == "other_exp")
+
+other <- other[order(-other$order),]
+
+other$dates <- paste0(other$start_date, "-", other$end_date) 
+other$dates <-gsub("NA", "", other$dates)
+
+myvars <- c("dates", "description")
+other <- other[myvars]
+
+ft <- flextable(other) 
+
+ft <-delete_part(ft, part = "header")
+ft <- border_remove(ft)
+
+ft <-width(ft, j=1, width = 1.00)
+ft <-width(ft, j=2, width = 6.25)
+
+ft <- font(ft, fontname = "Arial", part = "all")
+ft <- fontsize(ft, size = 11, part = "all")
+
+ft_other <- padding(ft, padding = 1, part = "all")
+
+ft_other
+
+```
+
+<br>   
+
+######### Honors
+```{r honors}
+
+honors<- df %>% 
+  filter(section == "honors")
+
+honors <- honors[order(-honors$order),]
+
+honors$dates <- paste0(honors$start_date, honors$end_date) 
+honors$dates <-gsub("NA", "", honors$dates)
+
+myvars <- c("dates", "description")
+honors <- honors[myvars]
+
+ft <- flextable(honors) 
+
+ft <-delete_part(ft, part = "header")
+ft <- border_remove(ft)
+
+ft <-width(ft, j=1, width = 1)
+ft <-width(ft, j=2, width = 6.25)
+
+ft <- font(ft, fontname = "Arial", part = "all")
+ft <- fontsize(ft, size = 11, part = "all")
+
+ft_honors <- padding(ft, padding = 1, part = "all")
+
+ft_honors
+
+```
+
+##### C. Contribution to Science
+
+1. **Methods Development and Reporting.** My primary area of research is the development of novel statistical methods to better translate experimental simulation-based best practices into real-world settings where the application is often not so good. In the applied setting we have to solve all kinds of limitations. One of my main areas of interest has been missing data where I have led simulation-based research and contributed to best practice recommendations for applied researchers. In 2012, I was awarded a research grant by the Society for Multivariate Experimental Psychology for the special emphasis of this work on multivariate approaches to the measurement and analysis of substantive problems. In 2021, I attained more than $200k in external pharmaceutical client support for statistical methodology development in missing data analysis and reporting guidelines.    
+
+    a. Howard, W. J., Rhemtulla, M., and Little, T. D. (2015). Using principal components as auxiliary variables
+in missing data estimation. Multivariate Behavioral Research, 50(3):285–299
+    a. Nicholson, J. S., Deboeck, P. R., and Howard, W. (2017). Attrition in developmental psychology: A review
+of modern missing data reporting and practices. International Journal of Behavioral Development,
+41(1):143–153
+    a. Zhou, C., Gao, Y., and Howard, W. (2017). Evaluation of combining bootstrap with multiple imputation
+using r on knights landing platform. In 2017 IEEE 4th International Conference on Cyber Security and
+Cloud Computing (CSCloud), pages 14–17. IEEE  
+
+<br>
+
+2. **Statistics and modern quantitative methods.** Over simplified data analytic practices persist within the social, behavioral, and health sciences. Our vision of research is constrained by how we think about and use data. Too often we develop intricate theories about how the world works, which represent a lot of deep thinking about a topic, only to cut them up into smaller chunks that are then crammed into canned statistical procedures that were never designed to address the original question to begin with. I am committed to identifying such practices, providing modern demonstrations of their disadvantages, and explaining available alternatives, to discourage their further use. We often want to know how (mediation) and when (moderation) predictive relations hold or are strong versus weak or want more flexibility in examining change over time. To this aim, I have directly collaborated with researchers to garner new research funding and developed considerable experience applying diverse best-practice methods to complex problems in new areas.          
+
+    a. Law, E. F., Fisher, E., Howard, W. J., Levy, R., Ritterband, L., and Palermo, T. M. (2017). Longitudinal
+change in parent and child functioning after internet-delivered cognitive-behavioral therapy for chronic
+pain. Pain, 158(10):1992
+    a. Chan, C. S., Rhodes, J. E., Howard, W. J., Lowe, S. R., Schwartz, S. E., and Herrera, C. (2013). Pathways
+of influence in school-based mentoring: The mediating role of parent and teacher relationships.
+Journal of School Psychology, 51(1):129–142
+    a. Okech, D., Howard, W. J., Matthew, R. A., and Purser, G. L. (2020). The effects of sociodemographic
+variables on the economic behaviour of poorer households in the US and Kenya: a cross-national analysis.
+Journal of Contemporary African Studies, 38(4):541–559
+    a. Okech, D., Hansen, N., Howard, W., Anarfi, J. K., and Burns, A. C. (2018). Social support, dysfunctional
+coping, and community reintegration as predictors of PTSD among human trafficking survivors.
+Behavioral medicine, 44(3):209–218
+
+<br>
+  
+######### Complete List of Published Work in MyBibliography:
+
+[www.ncbi.nlm.nih.gov/myncbi/waylon.howard.1/cv/125974](https://www.ncbi.nlm.nih.gov/myncbi/waylon.howard.1/cv/125974)
+
+##### D. Additional Information: Research Support and/or Scholastic Performance   
+
+<br>    
+
+######### Ongoing Research Support
+```{r ongoing}
+
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet3")
+
+ongoing<- df %>% 
+  filter(section == "ongoing")
+
+ongoing <- ongoing[order(-ongoing$order),]
+
+ongoing$role <- paste0("Role: ", ongoing$role)
+
+myvars <- c("id", "pi", "dates", "title", "description", "role")
+ongoing <- ongoing[myvars]
+
+for(i in 1:5) {                                  
+  assign(paste0("show_text",i), FALSE)  
+}
+
+for (i in 1:nrow(ongoing)) {
+  
+ft3 <- flextable(ongoing[i,],
+  col_keys = c("id", "pi", "dates")) 
+ft3 <- delete_part(ft3, part = "header")
+ft3 <- border_remove(ft3)
+ft3 <-width(ft3, j=c(1,2), width = 2)
+ft3 <-width(ft3, j=3, width = 3.25)
+
+ft3 <- font(ft3, fontname = "Arial", part = "all")
+ft3 <- fontsize(ft3, size = 11, part = "all")
+ft3 <- padding(ft3, padding = .25, part = "all")
+
+ft4 <- flextable(ongoing[i,],
+  col_keys = c("title")) 
+ft4 <- delete_part(ft4, part = "header")
+ft4 <- border_remove(ft4)
+ft4 <-width(ft4, j=1, width = 7.25)
+
+ft4 <- font(ft4, fontname = "Arial", part = "all")
+ft4 <- fontsize(ft4, size = 11, part = "all")
+ft4 <- padding(ft4, padding = .25, part = "all")
+
+ft5 <- flextable(ongoing[i,],
+  col_keys = c("description")) 
+ft5 <- delete_part(ft5, part = "header")
+ft5 <- border_remove(ft5)
+ft5 <-width(ft5, j=1, width = 7.25)
+
+ft5 <- font(ft5, fontname = "Arial", part = "all")
+ft5 <- fontsize(ft5, size = 11, part = "all")
+ft5 <- padding(ft5, padding = .25, part = "all")
+
+ft6 <- flextable(ongoing[i,],
+  col_keys = c("role")) 
+ft6 <- delete_part(ft6, part = "header")
+ft6 <- border_remove(ft6)
+ft6 <-width(ft6, j=1, width = 7.25)
+
+ft6 <- font(ft6, fontname = "Arial", part = "all")
+ft6 <- fontsize(ft6, size = 11, part = "all")
+ft6 <- padding(ft6, padding = .25, part = "all")
+
+assign(paste0("aft",i), ft3)
+assign(paste0("bft",i), ft4)
+assign(paste0("cft",i), ft5)
+assign(paste0("dft",i), ft6)
+
+assign(paste0("show_text",i), TRUE)
+}
+
+``` 
+
+```{r conditional_block1, echo=FALSE, results='asis', eval=show_text1}
+aft1 
+bft1 
+cft1 
+dft1
+cat("<br />")
+```
+
+```{r conditional_block2, echo=FALSE, results='asis', eval=show_text2}
+aft2 
+bft2 
+cft2 
+dft2
+cat("<br />")
+```
+
+```{r conditional_block3, echo=FALSE, results='asis', eval=show_text3}
+aft3 
+bft3 
+cft3 
+dft3
+cat("<br />")
+```
+
+```{r conditional_block4, echo=FALSE, results='asis', eval=show_text4}
+aft4 
+bft4 
+cft4 
+dft4
+cat("<br />")
+```
+
+```{r conditional_block5, echo=FALSE, results='asis', eval=show_text5}
+aft5 
+bft5 
+cft5 
+dft5
+cat("<br />")
+```
+<br>
+
+
+######### Completed Research Support
+```{r done}
+
+df <- readxl::read_xlsx("C:/Users/whowar/Desktop/biosketch/2021_01_WJH/positions-honors-nih.xlsx", "Sheet3")
+
+ongoing<- df %>% 
+  filter(section == "complete")
+
+ongoing <- ongoing[order(-ongoing$order),]
+
+ongoing$role <- paste0("Role: ", ongoing$role)
+
+myvars <- c("id", "pi", "dates", "title", "description", "role")
+ongoing <- ongoing[myvars]
+
+for(i in 1:5) {                                  
+  assign(paste0("show_textc",i), FALSE)  
+}
+
+for (i in 1:nrow(ongoing)) {
+  
+ft3 <- flextable(ongoing[i,],
+  col_keys = c("id", "pi", "dates")) 
+ft3 <- delete_part(ft3, part = "header")
+ft3 <- border_remove(ft3)
+ft3 <-width(ft3, j=c(1,2), width = 2)
+ft3 <-width(ft3, j=3, width = 3.25)
+
+ft3 <- font(ft3, fontname = "Arial", part = "all")
+ft3 <- fontsize(ft3, size = 11, part = "all")
+ft3 <- padding(ft3, padding = .25, part = "all")
+
+ft4 <- flextable(ongoing[i,],
+  col_keys = c("title")) 
+ft4 <- delete_part(ft4, part = "header")
+ft4 <- border_remove(ft4)
+ft4 <-width(ft4, j=1, width = 7.25)
+
+ft4 <- font(ft4, fontname = "Arial", part = "all")
+ft4 <- fontsize(ft4, size = 11, part = "all")
+ft4 <- padding(ft4, padding = .25, part = "all")
+
+ft5 <- flextable(ongoing[i,],
+  col_keys = c("description")) 
+ft5 <- delete_part(ft5, part = "header")
+ft5 <- border_remove(ft5)
+ft5 <-width(ft5, j=1, width = 7.25)
+
+ft5 <- font(ft5, fontname = "Arial", part = "all")
+ft5 <- fontsize(ft5, size = 11, part = "all")
+ft5 <- padding(ft5, padding = .25, part = "all")
+
+ft6 <- flextable(ongoing[i,],
+  col_keys = c("role")) 
+ft6 <- delete_part(ft6, part = "header")
+ft6 <- border_remove(ft6)
+ft6 <-width(ft6, j=1, width = 7.25)
+
+ft6 <- font(ft6, fontname = "Arial", part = "all")
+ft6 <- fontsize(ft6, size = 11, part = "all")
+ft6 <- padding(ft6, padding = .25, part = "all")
+
+assign(paste0("aftc",i), ft3)
+assign(paste0("bftc",i), ft4)
+assign(paste0("cftc",i), ft5)
+assign(paste0("dftc",i), ft6)
+
+assign(paste0("show_textc",i), TRUE)
+
+}
+
+``` 
+
+```{r conditional_blockc1, echo=FALSE, results='asis', eval=show_textc1}
+aftc1 
+bftc1 
+cftc1 
+dftc1 
+cat("<br />")
+```
+
+```{r conditional_blockc2, echo=FALSE, results='asis', eval=show_textc2}
+aftc2 
+bftc2 
+cftc2 
+dftc2
+cat("<br />")
+```
+
+```{r conditional_blockc3, echo=FALSE, results='asis', eval=show_textc3}
+aftc3 
+bftc3 
+cftc3 
+dftc3
+cat("<br />")
+```
+
+```{r conditional_blockc4, echo=FALSE, results='asis', eval=show_textc4}
+aftc4 
+bftc4 
+cftc4 
+dftc4
+cat("<br />")
+```
+
+```{r conditional_blockc5, echo=FALSE, results='asis', eval=show_textc5}
+aftc5 
+bftc5 
+cftc5 
+dftc5
+cat("<br />")
+```
+<br>
+
