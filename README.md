@@ -1,6 +1,6 @@
 # RmdNIHbio - Easily create your biosketch
 
-I presented a NIH biosketch tool on 0/00/2022 written with [R Markdown](https://rmarkdown.rstudio.com/), integrated with content coming from Excel (.XLSX) and exported as a Word (.DOCX) document.
+This is an NIH biosketch tool written with [R Markdown](https://rmarkdown.rstudio.com/), integrated with content coming from Excel (.XLSX) and exported as a Word (.DOCX) document.
 
 
 #### Note: The work on this app has focused on automating an NIH biosketch. 
