@@ -95,10 +95,8 @@ pub3 <- top_3pubs_list[[3]]
 cites<-get_citation_history(myid)
 ncites<-sum(cites$cites)
 
-hindex <- predict_h_index(myid)
-nhindex <- hindex$h_index[hindex$years_ahead==0]
-
 l <- get_profile(myid)
+hindex <- l$h_index
 i10index <- l$i10_index
 
 njournals <- get_num_distinct_journals(myid)
@@ -155,7 +153,7 @@ ft1
 
 ```{r degrees}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet2")
+df <- readxl::read_xlsx("C:/Users/whowar/Documents/GitHub/NIHbiosketch/mydata.xlsx", "Sheet2")
 edu <- df[order(df$order),]
 
 edu$inst <- paste0(" ", edu$INSTITUTION, ", ", edu$LOCATION)
@@ -207,7 +205,7 @@ ft
 
 ##### A. Personal Statement
 
-Originally trained as a Quantitative Psychologist, I have studied applied statistics and research methodology for over 10 years and gone on to develop advanced expertise in the application and advancement of quantitative measurement and analysis practices within the social, behavioral, and health sciences. My research interests include modeling individual, group, and developmental differences, general structural equations modeling techniques (e.g., MACS, Growth Curve, HLM, mediation), construct validation, measurement, selection effects, and missing data analysis. I have served as collaborator, consultant, and significant contributor for successful NIH U01-, R21-, R01-; NSF-; and IES-funded grants. In addition, I have served as the Director of research for several applied statistical science groups across academic, industry, and non-profit research organizations. I have also successfully organized, managed, and taught a week-long summer statistics workshop series at the University of Massachusetts including basic and advanced courses (total participants = 60) focused on advanced statistical training at the graduate and post-graduate level. As an interdisciplinary-oriented collaborator, my work has appeared in `r njournals` different peer-reviewed journals and been cited `r ncites` times, with an h-index of `r nhindex`, and an i-10 index of `r i10index`. I have served as a reviewer for 7 different scientific journals and have served as a statistical consultant on more than 15 contracts.
+Originally trained as a Quantitative Psychologist, I have studied applied statistics and research methodology for over 10 years and gone on to develop advanced expertise in the application and advancement of quantitative measurement and analysis practices within the social, behavioral, and health sciences. My research interests include modeling individual, group, and developmental differences, general structural equations modeling techniques (e.g., MACS, Growth Curve, HLM, mediation), construct validation, measurement, selection effects, and missing data analysis. I have served as collaborator, consultant, and significant contributor for successful NIH U01-, R21-, R01-; NSF-; and IES-funded grants. In addition, I have served as the Director of research for several applied statistical science groups across academic, industry, and non-profit research organizations. I have also successfully organized, managed, and taught a week-long summer statistics workshop series at the University of Massachusetts including basic and advanced courses (total participants = 60) focused on advanced statistical training at the graduate and post-graduate level. As an interdisciplinary-oriented collaborator, my work has appeared in `r njournals` different peer-reviewed journals and been cited `r ncites` times, with an h-index of `r hindex`, and an i-10 index of `r i10index`. I have served as a reviewer for 7 different scientific journals and have served as a statistical consultant on more than 15 contracts.
 
 <br>
 
@@ -221,7 +219,7 @@ Originally trained as a Quantitative Psychologist, I have studied applied statis
 ######### Positions and Employment
 ```{r jobs}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet1")
+df <- readxl::read_xlsx("C:/Users/whowar/Documents/GitHub/NIHbiosketch/mydata.xlsx", "Sheet1")
 
 jobs<- df %>% 
   filter(section == "positions")
@@ -360,7 +358,7 @@ Behavioral medicine, 44(3):209–218
 ######### Ongoing Research Support
 ```{r ongoing}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet3")
+df <- readxl::read_xlsx("C:/Users/whowar/Documents/GitHub/NIHbiosketch/mydata.xlsx", "Sheet3")
 
 ongoing<- df %>% 
   filter(section == "ongoing")
@@ -474,7 +472,7 @@ cat("<br />")
 ######### Completed Research Support
 ```{r done}
 
-df <- readxl::read_xlsx("C:/Users/whowar/Desktop/NIHbiosketch/mydata.xlsx", "Sheet3")
+df <- readxl::read_xlsx("C:/Users/whowar/Documents/GitHub/NIHbiosketch/mydata.xlsx", "Sheet3")
 
 ongoing<- df %>% 
   filter(section == "complete")
