@@ -55,7 +55,6 @@ output:
     reference_num: true
 ---
 
-
 ```{r global_options, include=FALSE}
 
 library(scholar)
@@ -110,7 +109,6 @@ knitr::opts_chunk$set(fig.path = 'figures/',
 
 ```
 
-
 ```{r header}
 
 df <- data.frame(A = c("BIOGRAPHICAL SKETCH", "Provide the following information for the Senior/key personnel and other significant contributors.", "Follow this format for each person. DO NOT EXCEED FIVE PAGES.", paste0("NAME: ", lf), "eRA COMMONS USERNAME (credential, e.g., agency login): waylonh", "POSITION TITLE: Principal Biostatistician", "EDUCATION/TRAINING (Begin with baccalaureate or other initial professional education, such as nursing, include postdoctoral training and residency training if applicable. Add/delete rows as necessary.)" ))
@@ -137,7 +135,7 @@ ft1 <- valign(ft1, i = c(3,4,5,6,7), j = 1, valign = "top", part = "body")
 ft1 <- hline(ft1, i = c(3,4,5,6,7), j = 1,  part="body", border = std_border )
 
 ft1 <- add_header_row(ft1, colwidths = c(1),
-        values = c("OMB No. 0925-0001 and 0925-0002 (Rev. 03/2020 Approved Through 02-28-2023)") )
+        values = c("OMB No. 0925-0001 and 0925-0002 (Rev. 10/2021 Approved Through 01/31/2026)") )
 ft1 <- align(ft1, align = "right", part = "header")
 ft1 <- fontsize(ft1, size = 8, part = "header")
 
@@ -149,7 +147,6 @@ ft1 <- hline(ft1, border = std_border, part = "header")
 ft1
 
 ```
-
 
 ```{r degrees}
 
@@ -205,9 +202,29 @@ ft
 
 ##### A. Personal Statement
 
-Originally trained as a Quantitative Psychologist, I have studied applied statistics and research methodology for over 10 years and gone on to develop advanced expertise in the application and advancement of quantitative measurement and analysis practices within the social, behavioral, and health sciences. My research interests include modeling individual, group, and developmental differences, general structural equations modeling techniques (e.g., MACS, Growth Curve, HLM, mediation), construct validation, measurement, selection effects, and missing data analysis. I have served as collaborator, consultant, and significant contributor for successful NIH U01-, R21-, R01-; NSF-; and IES-funded grants. In addition, I have served as the Director of research for several applied statistical science groups across academic, industry, and non-profit research organizations. I have also successfully organized, managed, and taught a week-long summer statistics workshop series at the University of Massachusetts including basic and advanced courses (total participants = 60) focused on advanced statistical training at the graduate and post-graduate level. As an interdisciplinary-oriented collaborator, my work has appeared in `r njournals` different peer-reviewed journals and been cited `r ncites` times, with an h-index of `r hindex`, and an i-10 index of `r i10index`. I have served as a reviewer for 7 different scientific journals and have served as a statistical consultant on more than 15 contracts.
+As a seasoned biostatistician and research methodologist, I have dedicated my career to advancing statistical techniques and driving innovation in social, behavioral, and health science research. With a Ph.D. in Quantitative Psychology from the University of Kansas (2012), I have honed my expertise in study design, data analysis, and statistical modeling, with a particular focus on multilevel modeling, structural equation modeling, and longitudinal data analysis. Throughout my career, I have demonstrated leadership in directing research teams, mentoring junior statisticians and researchers, and contributing to numerous publications and presentations. My professional experience spans various organizations, including academic institutions, research institutes, and industry partners, allowing me to develop a well-rounded perspective on biostatistical applications in diverse contexts. In my roles as principal biostatistician and director of research methods and data analysis, I have led the development of manuscripts, authored grant analysis sections, and conducted cutting-edge methodological research. Additionally, I have provided mentorship and training to junior statisticians, programmers, faculty investigators, and research assistants, fostering a collaborative and growth-oriented research environment. As an interdisciplinary-oriented collaborator, my work has appeared in `r njournals` different peer-reviewed journals and been cited `r ncites` times, with an h-index of `r hindex`, and an i-10 index of `r i10index`. I have served as a reviewer for 7 different scientific journals and have served as a statistical consultant on more than 15 contracts. My comprehensive experience and deep understanding of biostatistical methods position me as an ideal candidate to contribute to the success of this project. I am confident in my ability to leverage my skills and knowledge to drive meaningful advancements and support the project's goals effectively. 
 
 <br>
+
+Ongoing and recently completed projects that I would like to highlight include:
+
+<br>
+
+R01 DE033703
+McKinney (PI), Role: co-investigator
+12/01/24 – 11/30/29 
+Leveraging Data for Infants with Cleft to Grow and Flourish: BLOOM
+
+<br>
+
+PCORI
+Christakis & Kroshus (PIs), Role: co-investigator
+10/01/24 – 11/30/26 
+Developing a multi-dimensional measure of adolescent engagement in research
+
+<br>
+
+Citations:
 
 1. `r pub1`
 
@@ -215,8 +232,8 @@ Originally trained as a Quantitative Psychologist, I have studied applied statis
 
 1. `r pub3`
 
-##### B. Positions and Honors
-######### Positions and Employment
+##### B. Positions, Scientific Appointments, and Honors
+######### Positions and Scientific Appointments
 ```{r jobs}
 
 df <- readxl::read_xlsx("C:/Users/whowar/Documents/GitHub/NIHbiosketch/mydata.xlsx", "Sheet1")
@@ -349,7 +366,7 @@ Behavioral medicine, 44(3):209–218
   
 ######### Complete List of Published Work in MyBibliography:
 
-[www.ncbi.nlm.nih.gov/myncbi/waylon.howard.1/cv/125974](https://www.ncbi.nlm.nih.gov/myncbi/waylon.howard.1/cv/125974)
+[https://www.ncbi.nlm.nih.gov/myncbi/1FuaABUhp7e5s/bibliography/public/ ](https://www.ncbi.nlm.nih.gov/myncbi/1FuaABUhp7e5s/bibliography/public/)
 
 ##### D. Additional Information: Research Support and/or Scholastic Performance   
 

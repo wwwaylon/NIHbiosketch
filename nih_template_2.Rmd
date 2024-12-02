@@ -1,0 +1,332 @@
+---
+title: ""
+author: ""
+date: ""
+output:
+  officedown::rdocx_document:
+    reference_docx: nih_template.docx
+    tables:
+      style: Table
+      layout: autofit
+      width: 1.0
+      topcaption: true
+      tab.lp: 'tab:'
+      caption:
+        style: Table Caption
+        pre: 'Table '
+        sep: ': '
+        tnd: 0
+        tns: '-'
+        fp_text: !expr officer::fp_text_lite(bold = TRUE)
+      conditional:
+        first_row: true
+        first_column: false
+        last_row: false
+        last_column: false
+        no_hband: false
+        no_vband: true
+    plots:
+      style: Normal
+      align: center
+      fig.lp: 'fig:'
+      topcaption: false
+      caption:
+        style: Image Caption
+        pre: 'Figure '
+        sep: ': '
+        tnd: 0
+        tns: '-'
+        fp_text: !expr officer::fp_text_lite(bold = TRUE)
+    lists:
+      ol.style: null
+      ul.style: null
+    page_size:
+      width: 8.3
+      height: 11.7
+      orient: "portrait"
+    page_margins:
+      bottom: .5
+      top: .5
+      right: .5
+      left: .5
+      header: 0.8
+      footer: 0.5
+      gutter: 0.0
+    reference_num: true
+---
+
+```{r global_options, include=FALSE}
+
+library(scholar)
+library(tidyverse)
+library(flextable)
+library(officer)
+
+myid <- "wUACzXkAAAAJ&hl"
+
+# Get name
+l <- get_profile(myid)
+lf <-  gsub("(\\w+)\\s*(\\w+)", "\\2, \\1", l$name)
+
+coauthor_network <- get_coauthors(myid, n_coauthors = 15, n_deep = 1)
+coauthor_network <- coauthor_network[1:10, ]
+coauthors <- paste0(coauthor_network$coauthor, collapse=", ")
+
+mypubs<-get_publications(
+  myid,
+  cstart = 0,
+  cstop = Inf,
+  pagesize = 100,
+  flush = FALSE,
+  sortby = "citation"
+)
+
+top_4pubs = head(mypubs, n = 4)
+
+top_4pubs$author<- gsub("(\\w+)\\s*(\\w+)", "\\2 \\1", top_4pubs$author) #--- reverse the author last name initials order
+
+top_4pubs$author <- gsub("Howard WJ|Howard W", "**Howard, W. J.**", top_4pubs$author)
+
+top_4pubs_list <- paste0(top_4pubs$author, " (", top_4pubs$year, "). ", top_4pubs$title, ". ", top_4pubs$journal, ", ", top_4pubs$number, ".")
+
+pub1 <- top_4pubs_list[[1]]
+pub2 <- top_4pubs_list[[2]]
+pub3 <- top_4pubs_list[[3]]
+pub4 <- top_4pubs_list[[4]]
+
+cites<-get_citation_history(myid)
+ncites<-sum(cites$cites)
+
+l <- get_profile(myid)
+hindex <- l$h_index
+i10index <- l$i10_index
+
+njournals <- get_num_distinct_journals(myid)
+
+## This saves you from having to do this for every chunk
+knitr::opts_chunk$set(fig.path = 'figures/',
+                      echo = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      results = "asis")
+
+```
+
+```{r header}
+
+df <- data.frame(A = c("BIOGRAPHICAL SKETCH", "Provide the following information for the Senior/key personnel and other significant contributors.", "Follow this format for each person. DO NOT EXCEED FIVE PAGES.", paste0("NAME: ", lf), "eRA COMMONS USERNAME (credential, e.g., agency login): waylonh", "POSITION TITLE: Principal Biostatistician", "EDUCATION/TRAINING (Begin with baccalaureate or other initial professional education, such as nursing, include postdoctoral training and residency training if applicable. Add/delete rows as necessary.)" ))
+
+ft1 <- flextable(df) 
+ft1 <-width(ft1, j=1, width = 7.5)
+
+ft1 <- delete_part(ft1, part = "header")
+ft1 <- align(ft1, i = c(1,2,3), j = 1, align = "center", part = "body")
+
+#------ font --------------
+ft1 <- fontsize(ft1, i = 1, j = 1, size = 13.5, part = "body")
+ft1 <- italic(ft1, i = 7, italic = TRUE, part = "body")
+ft1 <- bold(ft1, i = 1, bold = TRUE, part = "body")
+ft1 <- fontsize(ft1, i = c(2,3), size = 8, part = "body")
+
+#------ borders --------------
+ft1 <- border_remove(ft1)
+std_border = fp_border(color="black", width = 1, style = "solid")
+top_border = fp_border(color="white", width = 1)
+
+ft1 <- valign(ft1, i = c(3,4,5,6,7), j = 1, valign = "top", part = "body")
+
+ft1 <- hline(ft1, i = c(3,4,5,6,7), j = 1,  part="body", border = std_border )
+
+ft1 <- add_header_row(ft1, colwidths = c(1),
+        values = c("OMB No. 0925-0001 and 0925-0002 (Rev. 10/2021 Approved Through 01/31/2026)") )
+ft1 <- align(ft1, align = "right", part = "header")
+ft1 <- fontsize(ft1, size = 8, part = "header")
+
+ft1 <- padding(ft1, i=c(1,2,3,4,5,6,7), padding.top = .10, part = "body")
+ft1 <- padding(ft1, i=c(2), padding.bottom = .10, part = "body")
+
+ft1 <- hline(ft1, border = std_border, part = "header")
+
+ft1
+
+```
+
+```{r degrees}
+
+df <- readxl::read_xlsx("C:/Users/whowar/Documents/GitHub/NIHbiosketch/mydata2.xlsx", "Sheet2")
+edu <- df[order(df$order),]
+
+edu$inst <- paste0(" ", edu$INSTITUTION, ", ", edu$LOCATION)
+edu$datemy <- paste0("05/", edu$YEAR)
+
+edu$MAJOR<-paste0(" ",edu$MAJOR)
+
+myvars <- c("inst", "DEGREE", "datemy", "MAJOR")
+edu <- edu[myvars]
+
+names(edu) <- c("INSTITUTION AND LOCATION", "DEGREE (if applicable)", "Completion Date MM/YYYY", "FIELD OF STUDY")
+
+ft <- flextable(edu) 
+
+#ft <- add_body(
+#  x = ft, `INSTITUTION AND LOCATION` = c(""), `DEGREE (if applicable)` = "  ", `Completion Date MM/YYYY` = "  ", `FIELD OF STUDY` = "  ", top = FALSE
+#)
+
+std_border = fp_border(color="black", width = 1)
+btm_border = fp_border(color="white", width = 1)
+top_border = fp_border(color="white", width = 1)
+
+ft <- border_remove(ft)
+
+ft <- border_inner_v(ft, border = std_border, part = "all")
+
+ft <- bold(ft, bold = FALSE, part = "header")
+
+ft <- border(ft, border.top = std_border, part = "header" )
+ft <- hline(ft, part="header", border = std_border )
+
+ft <-width(ft, j=1, width = 2.85)
+ft <-width(ft, j=2, width = 1)
+ft <-width(ft, j=3, width = 1.5)
+ft <-width(ft, j=c(4), width = 2.10)
+
+ft <- font(ft, fontname = "Arial", part = "all")
+ft <- fontsize(ft, size = 11, part = "all")
+
+ft <- align(ft, j = c(2,3), align = "center", part = "body")
+ft <- align(ft, align = "center", part = "header")
+ft <- padding(ft, padding = 1, part = "all")
+
+ft <- padding(ft, j = 4, padding.left = 2)
+
+ft
+
+```
+
+##### A. Personal Statement
+
+As a dedicated biostatistician and research methodologist, I have spent my career advancing statistical methodologies in social, behavioral, and health sciences. With a Ph.D. in Quantitative Psychology from the University of Kansas (2012), my expertise spans study design, data analysis, and statistical modeling, with a strong focus on multilevel modeling, structural equation modeling, and longitudinal data analysis. Over the years, I have led research teams, mentored emerging statisticians and researchers, and contributed to numerous publications and presentations. My professional background encompasses academic institutions, research centers, and industry partnerships, providing me with a comprehensive perspective on biostatistical applications across diverse fields. In my roles as principal biostatistician and director of research methods, I have led the development of manuscripts, authored grant analysis sections, and pioneered methodological research. I am also committed to mentorship, having trained junior statisticians, programmers, faculty, and research assistants, fostering a collaborative and growth-oriented research environment. As a widely published, interdisciplinary collaborator, my work has appeared in `r njournals` peer-reviewed journals and has been cited over `r ncites` times, with an h-index of `r hindex` and an i10-index of `r i10index`. I am an active reviewer for seven scientific journals and have consulted on more than 20 projects. My extensive experience and deep expertise in biostatistics uniquely position me to contribute to this project’s success. I am confident in my ability to drive meaningful advancements and to support the project’s goals effectively.
+
+\
+Ongoing and recently completed projects that I would like to highlight include:
+
+\
+R01 DE033703 \
+McKinney (PI), Role: Key Personnel \
+12/01/24 – 11/30/29 \
+Leveraging Data for Infants with Cleft to Grow and Flourish: BLOOM
+
+\
+PCORI \
+Christakis & Kroshus (PIs), Role: Key Personnel \
+10/01/24 – 11/30/26 \
+Developing a multi-dimensional measure of adolescent engagement in research
+
+\
+Citations:\
+
+1. `r pub1`
+
+1. `r pub2`
+
+1. `r pub3`
+
+1. `r pub4`
+
+##### B. Positions, Scientific Appointments, and Honors
+##### Positions and Scientific Appointments
+
+```{r jobs}
+
+df <- readxl::read_xlsx("C:/Users/whowar/Documents/GitHub/NIHbiosketch/mydata2.xlsx", "Sheet1")
+
+jobs<- df %>% 
+  filter(section == "positions")
+
+jobs <- jobs[order(-jobs$order),]
+
+jobs$dates <- paste0(jobs$start_date, "-", jobs$end_date) 
+jobs$dates <-gsub("NA", "", jobs$dates)
+
+myvars <- c("dates", "description")
+jobs <- jobs[myvars]
+
+ft <- flextable(jobs) 
+
+ft <-delete_part(ft, part = "header")
+ft <- border_remove(ft)
+
+ft <-width(ft, j=1, width = 1.00)
+ft <-width(ft, j=2, width = 6.25)
+
+ft <- font(ft, fontname = "Arial", part = "all")
+ft <- fontsize(ft, size = 11, part = "all")
+
+ft_jobs <- padding(ft, padding = 1, part = "all")
+
+ft_jobs
+
+```
+
+##### Honors
+
+```{r honors}
+
+honors<- df %>% 
+  filter(section == "honors")
+
+honors <- honors[order(-honors$order),]
+
+honors$dates <- paste0(honors$start_date, honors$end_date) 
+honors$dates <-gsub("NA", "", honors$dates)
+
+myvars <- c("dates", "description")
+honors <- honors[myvars]
+
+ft <- flextable(honors) 
+
+ft <-delete_part(ft, part = "header")
+ft <- border_remove(ft)
+
+ft <-width(ft, j=1, width = 1)
+ft <-width(ft, j=2, width = 6.25)
+
+ft <- font(ft, fontname = "Arial", part = "all")
+ft <- fontsize(ft, size = 11, part = "all")
+
+ft_honors <- padding(ft, padding = 1, part = "all")
+
+ft_honors
+
+```
+
+##### C. Contribution to Science
+
+1. My research focuses on developing innovative statistical methods that address the gap between best practices established in experimental simulation environments and their real-world application, where challenges often limit effectiveness. A significant portion of my work targets the issue of missing data—a pervasive problem in applied research settings. Through leading simulation-based research, I have developed and contributed to best-practice recommendations to support applied researchers in managing and mitigating missing data. In recognition of my expertise in this area, I received a prestigious award from the Society for Multivariate Experimental Psychology in 2012 for my pioneering efforts in multivariate methodologies aimed at analyzing complex research problems. This accolade underscored my commitment to advancing statistical rigor and has been accompanied by over $225,000 in dedicated funding for methodology development. Collectively, this work continues to enhance the rigor of data analysis in diverse research settings and equips researchers with improved tools for translating theory into impactful, real-world applications
+\
+    a. **Howard, W. J.**, Rhemtulla, M., and Little, T. D. (2015). Using principal components as auxiliary variables in missing data estimation. Multivariate Behavioral Research, 50(3):285–299
+    a. Nicholson, J. S., Deboeck, P. R., and **Howard, W. J.** (2017). Attrition in developmental psychology: A review of modern missing data reporting and practices. International Journal of Behavioral Development, 41(1):143–153
+    a. Nicholson, J. S., Deboeck, P. R., & **Howard, W. J.** (under review). Implications of Missing at Random Assumption in Randomized Controlled Trials: Current Practices and Suggestions utilizing the ACTIVE study.  
+
+<br>
+
+2. Over-simplified data analytic practices remain widespread in social, behavioral, and health sciences, often limiting the depth and accuracy of our findings. Our approach to research can be constrained by conventional ways of thinking about and analyzing data. Frequently, we develop complex, nuanced theories about how the world operates—reflecting substantial thought and understanding—only to strip away these complexities in favor of standard statistical methods that may not align with the original research questions. My work focuses on identifying and addressing these limitations, providing modern demonstrations of the drawbacks of traditional methods, and offering viable alternatives to encourage more rigorous approaches. Often, we need to understand both how (mediation) and when (moderation) predictive relationships are present or strong, or to allow greater flexibility in examining change over time. Toward this goal, I have collaborated directly with researchers to secure new funding and have developed substantial expertise in applying best-practice methods to tackle complex, interdisciplinary questions
+\
+    a. Law, E. F., Fisher, E., **Howard, W. J.**, Levy, R., Ritterband, L., and Palermo, T. M. (2017). Longitudinal change in parent and child functioning after internet-delivered cognitive-behavioral therapy for chronic pain. Pain, 158(10):1992
+    a. Chan, C. S., Rhodes, J. E., **Howard, W. J.**, Lowe, S. R., Schwartz, S. E., and Herrera, C. (2013). Pathways of influence in school-based mentoring: The mediating role of parent and teacher relationships. Journal of School Psychology, 51(1):129–142
+    a. Okech, D., **Howard, W. J.**, Matthew, R. A., and Purser, G. L. (2020). The effects of sociodemographic variables on the economic behavior of poorer households in the US and Kenya: a cross-national analysis. Journal of Contemporary African Studies, 38(4):541–559
+    a. Okech, D., Hansen, N., **Howard, W. J.**, Anarfi, J. K., and Burns, A. C. (2018). Social support, dysfunctional coping, and community reintegration as predictors of PTSD among human trafficking survivors. Behavioral medicine, 44(3):209–218
+
+<br>
+
+3. My commitment to advancing statistical methodologies is further evidenced by my collaborative efforts across disciplines. I actively engage with researchers from diverse fields to secure funding aimed at addressing pressing social and behavioral questions. These partnerships not only enhance my understanding of complex issues but also facilitate the application of advanced statistical techniques to real-world problems. By fostering interdisciplinary collaborations, I aim to promote the adoption of innovative statistical practices that improve the robustness of research outcomes. This work emphasizes the importance of collaboration in addressing multifaceted research challenges and translates into actionable solutions that benefit both academic and applied settings.
+\
+    a. Webb, S. J., **Howard, W. J.**, Garrison, M., Corrigan, S., Quinata, S., Taylor, L., & Christakis, D. A. (2024). Mobile Media Content Exposure and Toddlers Responses to Attention Prompts and Behavioral Requests. JAMA Network Open, 7(7), e2418492-e2418492.
+    a. Law, E. F., Tham, S. W., **Howard, W. J.**, Ward, T. M., & Palermo, T. M. (2024). Executive Functioning and Self-Management Processes Mediate the Relationship between Insomnia and Pain-Related Disability. The Journal of Pain, 25(1), 273-283.
+    a. McKinney, C. M., **Howard, W. J.**, Bijlani, K., Rahman, M., Meehan, A., Evans, K. N., Leavitt, D., Sitzman, T. J., Amoako-Yirenkyi, P., & Heike, C. L. (2024). Growth patterns between 0 to 36 months of age among US children with orofacial cleft: A retrospective cohort study. Journal of the Academy of Nutrition and Dietetics.
+
+
+##### Complete List of Published Work in MyBibliography:
+
+[https://www.ncbi.nlm.nih.gov/myncbi/1FuaABUhp7e5s/bibliography/public/](https://www.ncbi.nlm.nih.gov/myncbi/1FuaABUhp7e5s/bibliography/public/)
+
